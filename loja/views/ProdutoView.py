@@ -4,6 +4,7 @@ from loja.models import Produto
 from datetime import timedelta, datetime
 from django.utils import timezone
 from django.core.files.storage import FileSystemStorage
+from loja.models import Produto, Fabricante, Categoria
 
 
 # Carrega dados no navegador
@@ -47,17 +48,23 @@ def edit_produto_postback(request, id=None):
         destaque = request.POST.get("destaque")
         promocao = request.POST.get("promocao")
         msgPromocao = request.POST.get("msgPromocao")
+        categoria = request.POST.get("CategoriaFk")
+        fabricante = request.POST.get("FabricanteFk")
         print("postback")
         print(id)
         print(produto)
         print(destaque)
         print(promocao)
         print(msgPromocao)
+        print(fabricante)
+        print(categoria)
         try:
             obj_produto = Produto.objects.filter(id=id).first()
             obj_produto.Produto = produto
             obj_produto.destaque = destaque is not None
             obj_produto.promocao = promocao is not None
+            obj_produto.fabricante = Fabricante.objects.filter(id=fabricante).first()
+            obj_produto.categoria = Categoria.objects.filter(id=categoria).first()
             if msgPromocao is not None:
                 obj_produto.msgPromocao = msgPromocao
                 obj_produto.save()
@@ -73,7 +80,9 @@ def edit_produto_view(request, id=None):
         produtos = produtos.filter(id=id)
     produto = produtos.first()
     print(produto)
-    context = {"produto": produto}
+    Fabricantes = Fabricante.objects.all()
+    Categorias = Categoria.objects.all()
+    context = {'produto': produto, 'fabricantes' : Fabricantes, 'categorias' : Categorias}
     return render(
         request, template_name="produto/produto-edit.html", context=context, status=200
     )
