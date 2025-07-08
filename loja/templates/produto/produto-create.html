@@ -40,6 +40,24 @@
                 <input type="file" name="image">
             </div>
             <div class="row">
+                <label for="CategoriaFk" class="col-md-2">Categorias</label>
+                <select name="CategoriaFk" id="CategoriaFk">
+                    <option value="">-----</option>
+                    {% for cate in categorias %}
+                    <option value="{{cate.id}}">{{cate.Categoria}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="row">
+                <label for="FabricanteFk" class="col-md-2">Fabricantes</label>
+                <select name="FabricanteFk" id="FabricanteFk">
+                    <option value="">-----</option>
+                    {% for fabri in fabricantes %}
+                    <option value="{{fabri.id}}">{{fabri.Fabricante}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="row">
                 <button type="submit" class="btn btn-danger col-md-2 mt-3 mr-2"><i class="fafa-check"></i> Salvar</button>
                 <a href={% url 'produto' %} class="btn bg-secondary col-md-2 mt-3"><i class="fafa-rotate-left"></i> Retornar</a>
             </div>

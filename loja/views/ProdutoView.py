@@ -56,8 +56,8 @@ def edit_produto_postback(request, id=None):
         print(destaque)
         print(promocao)
         print(msgPromocao)
-        print(fabricante)
         print(categoria)
+        print(fabricante)
         try:
             obj_produto = Produto.objects.filter(id=id).first()
             obj_produto.Produto = produto
@@ -95,7 +95,9 @@ def details_produto_view(request, id=None):
         produtos = produtos.filter(id=id)
     produto = produtos.first()
     print(produto)
-    context = {"produto": produto}
+    Fabricantes = Fabricante.objects.all()
+    Categorias = Categoria.objects.all()
+    context = {"produto": produto,"fabricantes": Fabricantes,"categorias": Categorias}
     return render(
         request,
         template_name="produto/produto-details.html",
@@ -111,7 +113,9 @@ def delete_produto_view(request, id=None):
         produtos = produtos.filter(id=id)
     produto = produtos.first()
     print(produto)
-    context = {"produto": produto}
+    Fabricantes = Fabricante.objects.all()
+    Categorias = Categoria.objects.all()
+    context = {"produto": produto,"fabricantes": Fabricantes,"categorias": Categorias}
     return render(
         request,
         template_name="produto/produto-delete.html",
@@ -145,6 +149,8 @@ def create_produto_view(request, id=None):
         msgPromocao = request.POST.get("msgPromocao")
         preco = request.POST.get("preco")
         image = request.POST.get("image")
+        categoria = request.POST.get("CategoriaFk")
+        fabricante = request.POST.get("FabricanteFk")
         print("postback-create")
         print(produto)
         print(destaque)
@@ -152,6 +158,8 @@ def create_produto_view(request, id=None):
         print(msgPromocao)
         print(preco)
         print(image)
+        print(categoria)
+        print(fabricante)
         try:
             obj_produto = Produto()
             obj_produto.Produto = produto
@@ -164,6 +172,10 @@ def create_produto_view(request, id=None):
                 obj_produto.preco = preco
             obj_produto.criado_em = timezone.now()
             obj_produto.alterado_em = obj_produto.criado_em
+            if fabricante is not None:
+                obj_produto.fabricante = Fabricante.objects.filter(id=fabricante).first()
+            if categoria is not None:
+                obj_produto.categoria = Categoria.objects.filter(id=categoria).first()
             # Se for anexado arquivo, salva na pasta e guarda nome no objeto
             if request.FILES is not None:
                 num_files = len(request.FILES.getlist("image"))
