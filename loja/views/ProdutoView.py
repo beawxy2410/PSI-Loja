@@ -177,6 +177,7 @@ def create_produto_view(request, id=None):
             # Se for anexado arquivo, salva na pasta e guarda nome no objeto
             if request.FILES is not None:
                 num_files = len(request.FILES.getlist('image'))
+            filename = ""
             if num_files > 0:
                 imagefile = request.FILES['image']
                 print(imagefile)
@@ -184,10 +185,12 @@ def create_produto_view(request, id=None):
                 filename = fs.save(imagefile.name, imagefile)
             if (filename is not None) and (filename != ""):
                 obj_produto.image = filename
-                obj_produto.save()
-                print("Produto %s salvo com sucesso" % produto)
+            obj_produto.save()
+            print("Produto %s salvo com sucesso" % produto)
         except Exception as e:
             print("Erro inserindo produto: %s" % e)
         return redirect("/produto")
 
     return render(request, template_name='produto/produto-create.html', context={"fabricantes": Fabricante.objects.all(), "categorias": Categoria.objects.all()}, status=200)
+
+
