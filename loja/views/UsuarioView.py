@@ -11,45 +11,48 @@ def list_usuario_view(request, id=None):
 
 
 def edit_usuario_view(request):
+    # Busca o objeto Usuario correspondente ao usuário logado
     usuario = get_object_or_404(Usuario, user=request.user)
+
+    # Inicialização das variáveis de controle
     emailUnused = True
     message = None
 
     if request.method == 'POST':
+        # Cria os formulários com os dados enviados no POST
         usuarioForm = UserUsuarioForm(request.POST, instance=usuario)
         userForm = UserForm(request.POST, instance=request.user)
-        verifyEmail = Usuario.objects.filter(user__email=request.POST['email']).exclude(user__id=request.user.id).first()
+
+        # Verifica se o e-mail já está em uso por outro usuário
+        verifyEmail = Usuario.objects.filter(
+            user__email=request.POST['email']
+        ).exclude(user__id=request.user.id).first()
+
         emailUnused = verifyEmail is None
+
+        # Se os formulários são válidos e o e-mail não está sendo usado
+        if usuarioForm.is_valid() and userForm.is_valid() and emailUnused:
+            usuarioForm.save()
+            userForm.save()
+            message = {'type': 'success', 'text': 'Dados atualizados com sucesso'}
+        else:
+            # Se o e-mail já está em uso por outro usuário
+            if not emailUnused:
+                message = {'type': 'warning', 'text': 'E-mail já usado'}
+            else:
+                # Se o e-mail está livre mas há erros nos formulários
+                message = {'type': 'danger', 'text': 'Dados inválidos'}
     else:
+        # Se for GET, apenas exibe os formulários preenchidos com os dados atuais
         usuarioForm = UserUsuarioForm(instance=usuario)
         userForm = UserForm(instance=request.user)
+        # Nenhuma mensagem de erro/sucesso no primeiro carregamento (GET)
 
-    if usuarioForm.is_valid() and userForm.is_valid() and emailUnused:
-        usuarioForm.save()
-        userForm.save()
-        message = { 'type': 'success', 'text': 'Dados atualizados com sucesso' }
-    else:
-    # Aqui verificamos se é do tipo post, para que na primeira vez que a página 
-    # carregar a mensagem não apareça, já que no primeiro carregamento não enviamos um post, o
-    # form é dado como inválido e entra aqui.
-        if request.method == 'POST':
-            if emailUnused:
-            # Se o e-mail não está em uso tiver algum dado inválido.
-                message = { 'type': 'danger', 'text': 'Dados inválidos' }
-        else:
-        # Se o e-mail já está em uso por outra pessoa.
-            message = { 'type': 'warning', 'text': 'E-mail já usado' }
-
-        # Até aqui
-        # Adicione a chave message a seguir
-
+    # Contexto para o template
     context = {
         'usuarioForm': usuarioForm,
         'userForm': userForm,
         'message': message
     }
 
-    return render(request,template_name='usuario/usuario-edit.html', context=context,status=200)
-
-
-
+    return render(request, template_name='usuario/usuario-edit.html', context=context, status=200)
