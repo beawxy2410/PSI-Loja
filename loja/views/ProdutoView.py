@@ -5,6 +5,7 @@ from datetime import timedelta, datetime
 from django.utils import timezone
 from django.core.files.storage import FileSystemStorage
 from loja.models import Produto, Fabricante, Categoria
+from django.contrib.auth.decorators import login_required
 
 
 # Carrega dados no navegador
@@ -39,7 +40,7 @@ def list_produto_view(request, id=None):
         request, template_name="produto/produto.html", context=context, status=200
     )
 
-
+@login_required
 def edit_produto_postback(request, id=None):
     if request.method == "POST":
         # Salva dados editados
