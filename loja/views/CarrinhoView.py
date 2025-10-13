@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from loja.models import Produto, Carrinho, CarrinhoItem
+from loja.models import Produto, Carrinho, CarrinhoItem, Usuario
 from datetime import datetime
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 
 
 # Função para adicionar um item ao carrinho
@@ -54,4 +56,66 @@ def create_carrinhoitem_view(request, produto_id=None):
     carrinho_item.save()
     print('item de carrinho salvo:', carrinho_item.id)
 
+    return redirect('/carrinho')
+
+
+def list_carrinho_view(request):
+    print ('list_carrinho_view')
+    carrinho = None
+    # Tenta pegar o carrinho da sessão ou cria um novo carrinho
+    carrinho_id = request.session.get('carrinho_id')
+    if carrinho_id:
+        print ('carrinho: ' + str(carrinho_id))
+        # Obtém o carrinho do usuário
+        carrinho = Carrinho.objects.filter(id=carrinho_id).first()
+        print ('Data do carrinho' + str(carrinho.criado_em) )
+        carrinho_item = None
+        # Verifica se o produto já existe no carrinho do usuário
+        carrinho_item = CarrinhoItem.objects.filter(carrinho_id=carrinho_id)
+        if carrinho_item:
+            print ('itens de carrinho encontrado: ' + str(carrinho_item))
+    context = {
+        'carrinho': carrinho,
+        'itens': carrinho_item
+        }
+    return render(request, 'carrinho/carrinho-listar.html', context=context)
+
+@login_required
+def confirmar_carrinho_view(request):
+    print('confirmar_carrinho_view')
+    carrinho = None
+
+    # Tenta pegar o carrinho da sessão
+    carrinho_id = request.session.get('carrinho_id')
+    if carrinho_id:
+        print('carrinho: ' + str(carrinho_id))
+
+        # Obtém o carrinho
+        carrinho = Carrinho.objects.filter(id=carrinho_id).first()
+        if not carrinho:
+            print('Carrinho não encontrado')
+            return redirect('pagina_de_erro_ou_home')
+
+        # Obtém o usuário (isso aqui pode ser um ponto crítico)
+        usuario = get_object_or_404(Usuario, user=request.user)
+        print('Usuario: ' + str(usuario))
+
+        # Atualiza o carrinho
+        carrinho.user_id = usuario.id
+        carrinho.situacao = 1
+        carrinho.confirmado_em = timezone.now()  
+        carrinho.save()
+        print('carrinho salvo')
+
+    context = {
+        'carrinho': carrinho
+    }
+    return render(request, 'carrinho/carrinho-confirmado.html', context=context)
+
+def remover_item_view(request, item_id):
+    item = get_object_or_404(CarrinhoItem, id=item_id)
+    # Verifica se o item pertence ao carrinho do usuário (opcional)
+    carrinho_id = request.session.get('carrinho_id')
+    if carrinho_id == item.carrinho.id:
+        item.delete()
     return redirect('/carrinho')
