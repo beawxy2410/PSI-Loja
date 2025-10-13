@@ -62,6 +62,7 @@ def create_carrinhoitem_view(request, produto_id=None):
 def list_carrinho_view(request):
     print ('list_carrinho_view')
     carrinho = None
+    carrinho_item = None
     # Tenta pegar o carrinho da sessão ou cria um novo carrinho
     carrinho_id = request.session.get('carrinho_id')
     if carrinho_id:
@@ -69,7 +70,6 @@ def list_carrinho_view(request):
         # Obtém o carrinho do usuário
         carrinho = Carrinho.objects.filter(id=carrinho_id).first()
         print ('Data do carrinho' + str(carrinho.criado_em) )
-        carrinho_item = None
         # Verifica se o produto já existe no carrinho do usuário
         carrinho_item = CarrinhoItem.objects.filter(carrinho_id=carrinho_id)
         if carrinho_item:
