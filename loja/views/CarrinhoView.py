@@ -119,3 +119,24 @@ def remover_item_view(request, item_id):
     if carrinho_id == item.carrinho.id:
         item.delete()
     return redirect('/carrinho')
+
+def atualizar_carrinhoitem_view(request, item_id):
+    if request.method == 'POST':
+        item = get_object_or_404(CarrinhoItem, id=item_id)
+        
+        nova_quantidade = request.POST.get('quantidade', None)
+        
+        if nova_quantidade is not None:
+            try:
+                nova_quantidade = int(nova_quantidade)
+                
+                if nova_quantidade > 0:
+                    item.quantidade = nova_quantidade
+                    item.save()
+                else:
+                    item.delete()
+                    
+            except ValueError:
+                pass 
+
+    return redirect('/carrinho')
